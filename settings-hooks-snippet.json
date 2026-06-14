@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE ACTIVE. Reply terse: lead with the answer or action; fewest words; no preamble, postamble, or hedging; one recommendation not a survey. Surface genuine safety caveats only. User disables with /toaster off.'",
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE ACTIVE. Reply terse: lead with the answer or action; fewest words; no preamble, postamble, or hedging; one recommendation not a survey. Surface genuine safety caveats only. User disables with /toaster off.'",
+            "suppressOutput": true
+          }
+        ]
+      }
+    ]
+  }
+}
