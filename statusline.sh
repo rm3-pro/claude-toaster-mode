@@ -131,8 +131,20 @@ fi
 # ── 4 & 5. Rate limits: 5-hour and weekly ─────────────────────────────────────
 # Only present for Claude.ai subscribers after first API response.
 # Rendered only when the field actually exists; never fabricated.
+# resets_at is an ISO 8601 timestamp (nullable) per the stdin contract.
 five_used=$(jqr '.rate_limits.five_hour.used_percentage')
 week_used=$(jqr '.rate_limits.seven_day.used_percentage')
+five_reset=$(jqr '.rate_limits.five_hour.resets_at')
+week_reset=$(jqr '.rate_limits.seven_day.resets_at')
+
+# Format an ISO 8601 timestamp to local time. GNU date → BSD date → raw UTC slice.
+fmt_time() {
+    local iso="$1" fmt="$2" out
+    [ -z "$iso" ] && return
+    out=$(date -d "$iso" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
+    out=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "${iso/Z/+0000}" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
+    case "$fmt" in *a*) echo "${iso:5:5} ${iso:11:5}Z";; *) echo "${iso:11:5}Z";; esac
+}
 
 rate_seg=""
 if [ -n "$five_used" ]; then
@@ -145,6 +157,8 @@ if [ -n "$five_used" ]; then
         five_col="$GRN"
     fi
     rate_seg="${DIM}5h:${RST}${five_col}${five_int}%${RST}/100"
+    rt=$(fmt_time "$five_reset" "%H:%M")
+    [ -n "$rt" ] && rate_seg="${rate_seg}${DIM}↻${rt}${RST}"
 fi
 
 if [ -n "$week_used" ]; then
@@ -157,6 +171,8 @@ if [ -n "$week_used" ]; then
         week_col="$GRN"
     fi
     week_seg="${DIM}7d:${RST}${week_col}${week_int}%${RST}/100"
+    rt=$(fmt_time "$week_reset" "%a %H:%M")
+    [ -n "$rt" ] && week_seg="${week_seg}${DIM}↻${rt}${RST}"
     rate_seg="${rate_seg:+$rate_seg }${week_seg}"
 fi
 
