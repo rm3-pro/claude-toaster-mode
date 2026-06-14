@@ -18,6 +18,39 @@ RED='\033[31m'
 GRN='\033[32m'
 MAG='\033[35m'
 
+# ── 0. Toaster mode indicator ──────────────────────────────────────────────────
+# ✓ = ON and enforcement hook is wired (reminder re-injected every turn)
+# ⚠ = enabled by flag but the UserPromptSubmit hook is MISSING — it is NOT being
+#     reapplied, so it can silently drift. (verifiable, not a guess)
+# ~ = ON and enforced, but the last assistant reply was long — POSSIBLE drift.
+#     This is a length heuristic only; long legit answers (code/tables) trip it.
+# ✗ = OFF (flag present).
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+toast_seg=""
+if [ -f "$CLAUDE_DIR/toaster-mode.off" ]; then
+    toast_seg="${DIM}toast:${RST}${RED}✗${RST}"
+else
+    enforced=""
+    if [ -f "$CLAUDE_DIR/settings.json" ]; then
+        enforced=$(jq -r '[.hooks.UserPromptSubmit[]?.hooks[]?.command] | any(test("toaster-mode.off"))' "$CLAUDE_DIR/settings.json" 2>/dev/null)
+    fi
+    if [ "$enforced" != "true" ]; then
+        toast_seg="${DIM}toast:${RST}${YLW}⚠${RST}"
+    else
+        tp=$(jqr '.transcript_path')
+        drift=""
+        if [ -n "$tp" ] && [ -f "$tp" ]; then
+            len=$(tail -n 40 "$tp" | jq -rs 'map(select(.type=="assistant")) | last | (.message.content // []) | map(select(.type=="text").text) | join("") | length' 2>/dev/null)
+            [ -n "$len" ] && [ "$len" != "null" ] && [ "$len" -gt 900 ] 2>/dev/null && drift=1
+        fi
+        if [ -n "$drift" ]; then
+            toast_seg="${DIM}toast:${RST}${YLW}~${RST}"
+        else
+            toast_seg="${DIM}toast:${RST}${GRN}✓${RST}"
+        fi
+    fi
+fi
+
 # ── 1. Tokens burned this session ─────────────────────────────────────────────
 # total_input_tokens = cumulative input in context window (includes cache reads/writes)
 # total_output_tokens = output tokens from last response
@@ -129,6 +162,7 @@ fi
 
 # ── Assemble ───────────────────────────────────────────────────────────────────
 parts=()
+[ -n "$toast_seg" ]  && parts+=("$toast_seg")
 [ -n "$tok_seg" ]    && parts+=("$tok_seg")
 [ -n "$ctx_seg" ]    && parts+=("$ctx_seg")
 [ -n "$compact_seg" ] && parts+=("$compact_seg")
