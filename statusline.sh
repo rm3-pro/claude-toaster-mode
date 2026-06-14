@@ -137,13 +137,20 @@ week_used=$(jqr '.rate_limits.seven_day.used_percentage')
 five_reset=$(jqr '.rate_limits.five_hour.resets_at')
 week_reset=$(jqr '.rate_limits.seven_day.resets_at')
 
-# Format an ISO 8601 timestamp to local time. GNU date → BSD date → raw UTC slice.
+# Format resets_at (Unix epoch seconds/ms OR ISO 8601 string) to local time.
 fmt_time() {
-    local iso="$1" fmt="$2" out
-    [ -z "$iso" ] && return
-    out=$(date -d "$iso" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
-    out=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "${iso/Z/+0000}" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
-    case "$fmt" in *a*) echo "${iso:5:5} ${iso:11:5}Z";; *) echo "${iso:11:5}Z";; esac
+    local v="$1" fmt="$2" out sec
+    [ -z "$v" ] || [ "$v" = "null" ] && return
+    if printf '%s' "$v" | grep -qE '^[0-9]+(\.[0-9]+)?$'; then
+        sec=${v%.*}
+        [ "${#sec}" -ge 13 ] && sec=$(( sec / 1000 ))   # ms → s
+        out=$(date -d "@$sec" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
+        out=$(date -r "$sec"  +"$fmt" 2>/dev/null) && { echo "$out"; return; }  # BSD
+        return
+    fi
+    out=$(date -d "$v" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
+    out=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "${v/Z/+0000}" +"$fmt" 2>/dev/null) && { echo "$out"; return; }
+    case "$fmt" in *a*) echo "${v:5:5} ${v:11:5}Z";; *) echo "${v:11:5}Z";; esac
 }
 
 rate_seg=""
