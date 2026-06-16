@@ -4,6 +4,8 @@ Make **terse, answer/action-only** replies the permanent default for [Claude Cod
 
 "Toaster mode" = no preamble, no postamble, no hedging, one recommendation instead of a survey. Enforced automatically (not just a preference) via lifecycle **hooks**, with a `/toaster` skill to toggle it.
 
+**v2 also steers behavior, not just style:** the injected reminder routes broad multi-file searches to an Explore subagent (keeping file dumps out of the main context), drops tool-call narration, and avoids re-reading/re-deriving — cutting the real cost driver (context growth), not just reply length.
+
 ## Install (one line)
 
 ```bash
@@ -40,6 +42,8 @@ rm -f  ~/.claude/toaster-mode.off  # on
 ## How it works
 
 A hook is a shell command Claude Code runs at a lifecycle event. These two fire on `SessionStart` (each new chat) and `UserPromptSubmit` (each message). The command prints the toaster reminder **only if the off-flag is absent**; that stdout is injected into the model's context as a system reminder. Deterministic enforcement, reapplied every turn — which is why it survives a long conversation where a one-time instruction would drift.
+
+The reminder is emitted byte-identical every turn, so after the first write it's a cheap prompt-cache read — which is why v2 invests in *behavior* clauses (the real cost lever) rather than throttling the injection to save tokens.
 
 ## Optional: HUD statusline
 

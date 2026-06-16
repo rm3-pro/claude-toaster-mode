@@ -46,6 +46,28 @@ test -f ~/.claude/toaster-mode.off && echo "toaster mode: OFF" || echo "toaster 
 - No hedging, no confidence justifications, no postamble.
 - Code/commands are the answer when relevant — skip narration around them.
 - Expand only when explicitly asked.
+- For broad multi-file searches, dispatch an Explore subagent so file dumps stay out of the main context; single known-file lookups stay inline.
+- No narration around tool calls — skip "Now I'll check X…".
+- Do not re-read files already in context or re-derive facts already established this session.
 - Still surface safety-critical caveats and genuine ambiguity — terse, not omitted.
+
+## Behavior steering (v2 — the "do more")
+
+The injected reminder is a compressed pointer to the rules above. Three of them
+target real session cost, not just reply length:
+
+- **Broad searches → Explore subagent.** Grep/Read across many files is the top
+  source of main-context bloat. A subagent reads the files in a context that is
+  discarded and returns only the conclusion, so the dumps never enter the main
+  thread. This is context hygiene (stable cache prefix, no re-processing), not
+  raw token elimination. Threshold: "broad/multi-file" → subagent; a single
+  known-file lookup stays inline.
+- **No tool-call narration.** Removes the per-call "Now I'll…" output.
+- **No re-reading / re-deriving.** Avoids redundant tool calls.
+
+Rationale for not throttling the injection itself: the reminder is emitted
+byte-identical every turn, so after the first turn it is a prompt-cache read —
+cheap. Shrinking or skipping it saves little and risks the directive being lost,
+so v2 keeps the every-turn inline hooks and invests in behavior instead.
 
 After toggling, confirm the new state in one line. Nothing more.

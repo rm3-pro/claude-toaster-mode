@@ -12,7 +12,7 @@ CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 SETTINGS="$CLAUDE_DIR/settings.json"
 SKILL_DIR="$CLAUDE_DIR/skills/toaster"
 
-HOOK_CMD="test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE ACTIVE. Reply terse: lead with the answer or action; fewest words; no preamble, postamble, or hedging; one recommendation not a survey. Surface genuine safety caveats only. User disables with /toaster off.'"
+HOOK_CMD="test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE: answer/action first; fewest words; one recommendation; no preamble/postamble/hedging; safety caveats only. Broad multi-file searches -> Explore subagent (single known-file lookups stay inline); keep file dumps out of main context. No tool-call narration. Do not re-read or re-derive. /toaster off to disable.'"
 
 command -v jq  >/dev/null || { echo "error: jq is required (brew/apt install jq)"; exit 1; }
 command -v curl >/dev/null || { echo "error: curl is required"; exit 1; }
