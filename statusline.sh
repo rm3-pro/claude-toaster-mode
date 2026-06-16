@@ -51,6 +51,19 @@ else
     fi
 fi
 
+# ── 0b. Superpowers mode indicator ─────────────────────────────────────────────
+# ⚡ = installed AND enabled (verifiable: enabledPlugins flag in settings.json).
+# ✗ = plugin enable flag absent/false. (verifiable, not a guess)
+sp_seg=""
+if [ -f "$CLAUDE_DIR/settings.json" ]; then
+    sp_on=$(jq -r '[.enabledPlugins // {} | to_entries[] | select(.key|test("^superpowers@")) | .value] | any(. == true)' "$CLAUDE_DIR/settings.json" 2>/dev/null)
+    if [ "$sp_on" = "true" ]; then
+        sp_seg="${MAG}⚡sp${RST}"
+    else
+        sp_seg="${DIM}sp:${RST}${RED}✗${RST}"
+    fi
+fi
+
 # ── 1. Tokens burned this session ─────────────────────────────────────────────
 # total_input_tokens = cumulative input in context window (includes cache reads/writes)
 # total_output_tokens = output tokens from last response
@@ -186,6 +199,7 @@ fi
 # ── Assemble ───────────────────────────────────────────────────────────────────
 parts=()
 [ -n "$toast_seg" ]  && parts+=("$toast_seg")
+[ -n "$sp_seg" ]     && parts+=("$sp_seg")
 [ -n "$tok_seg" ]    && parts+=("$tok_seg")
 [ -n "$ctx_seg" ]    && parts+=("$ctx_seg")
 [ -n "$compact_seg" ] && parts+=("$compact_seg")

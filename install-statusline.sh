@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Optional HUD statusLine installer for Claude Code.
-# Shows: tokens burned | context used/max | compaction | 5h & weekly usage.
+# Shows: toaster state | superpowers | tokens burned | context used/max |
+#        compaction | 5h & weekly usage.
 # Separate from the toaster installer so it never silently clobbers an
 # existing statusLine you may already have.
 #

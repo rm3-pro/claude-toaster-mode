@@ -46,9 +46,11 @@ A hook is a shell command Claude Code runs at a lifecycle event. These two fire 
 A bundled status line that shows current usage like a HUD:
 
 ```
-tok:143.5k | ctx:142.3k/200k 71% | cmpct:71/95% | 5h:18%/100 7d:33%/100
+toast:✓ | ⚡sp | tok:143.5k | ctx:142.3k/200k 71% | cmpct:71/95% | 5h:18%/100 7d:33%/100
 ```
 
+- `toast:` — toaster mode state, **verified** from your settings: `✓` on+enforced, `~` on but last reply ran long (possible drift), `⚠` flag-on but the `UserPromptSubmit` enforcement hook is missing, `✗` off
+- `⚡sp` — Superpowers plugin installed **and** enabled (verified via `enabledPlugins` in `settings.json`); shows `sp:✗` if the enable flag is absent/false, hidden if no `settings.json`
 - `tok` — tokens burned this session
 - `ctx` — context used / max + percent
 - `cmpct` — current context % vs the 95% auto-compact trigger (`NOW` at threshold)
