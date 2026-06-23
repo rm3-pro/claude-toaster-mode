@@ -45,6 +45,28 @@ A hook is a shell command Claude Code runs at a lifecycle event. These two fire 
 
 The reminder is emitted byte-identical every turn, so after the first write it's a cheap prompt-cache read — which is why v2 invests in *behavior* clauses (the real cost lever) rather than throttling the injection to save tokens.
 
+## In the wild
+
+Two prompting habits from people shipping with Claude every day — transcribed here rather than embedded as video. Both rhyme with toaster mode: cut the ceremony, keep the signal.
+
+> **"The most useful prompt I've ever given Claude wasn't for writing code — it was for *deleting* it."**
+>
+> Senior software engineer by day, vibe coder by night. Every time I finish a feature, I ask Claude to find every piece of dead code, duplicate logic, unused components, or unnecessary complexity it just added. Every single time, it finds something.
+>
+> Adding features is addictive — you build something new in an hour and feel like a genius, but every feature leaves behind a little mess: unused files, duplicate functions, code that technically works but nobody understands anymore. The longer you build, the more it piles up. Building features is fun; cleaning them up is where the real work starts — and that's the part nobody puts in these videos.
+>
+> — [**@buildinghappi**](https://www.tiktok.com/@buildinghappi)
+
+> **"I end every AI session with two questions."**
+>
+> The first: *"What are you least confident about right now? Enumerate everything."* It lists six or seven items — and maybe one in four times there's one that makes you go *why didn't this come up earlier?* Then you tell it to investigate those points exhaustively until it finds root causes and fully understands them.
+>
+> The second: *"What's the biggest thing I don't realize about this situation right now?"*
+>
+> Between those two, I get consistently great results.
+>
+> — [**@geeihadagoodtime**](https://www.tiktok.com/@geeihadagoodtime)
+
 ## Optional: HUD statusline
 
 A bundled status line that shows current usage like a HUD:
