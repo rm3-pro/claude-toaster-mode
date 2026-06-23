@@ -47,7 +47,7 @@ The reminder is emitted byte-identical every turn, so after the first write it's
 
 ## In the wild
 
-Two prompting habits from people shipping with Claude every day — transcribed here rather than embedded as video. Both rhyme with toaster mode: cut the ceremony, keep the signal.
+Habits from people shipping with Claude every day — transcribed here rather than embedded as video. They rhyme with toaster mode: cut the ceremony, keep the signal, don't skip the unglamorous parts.
 
 > **"The most useful prompt I've ever given Claude wasn't for writing code — it was for *deleting* it."**
 >
@@ -66,6 +66,12 @@ Two prompting habits from people shipping with Claude every day — transcribed 
 > Between those two, I get consistently great results.
 >
 > — [**@geeihadagoodtime**](https://www.tiktok.com/@geeihadagoodtime)
+
+> **"If you're getting into vibe coding: you cannot store your API keys in your GitHub."**
+>
+> Tell the agent building your app to put secrets in a `.env` file — and keep that file out of the repo. Your API keys (and anything sensitive, like payment methods) live wherever you host the app, as environment variables outside the codebase; the app reads them at runtime. It's not foolproof — hackers are getting more capable with these tools too — but it's the baseline that keeps you from setting yourself up for failure from the start.
+>
+> — [**@theaiconsultinglab**](https://www.tiktok.com/@theaiconsultinglab)
 
 ## Optional: HUD statusline
 
