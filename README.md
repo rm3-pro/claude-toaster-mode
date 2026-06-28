@@ -73,9 +73,9 @@ Habits from people shipping with Claude every day — transcribed here rather th
 >
 > — [**@theaiconsultinglab**](https://www.tiktok.com/@theaiconsultinglab)
 
-## Optional: HUD statusline
+## Optional: Claude HUD statusline
 
-A bundled status line that shows current usage like a HUD:
+A bundled Claude Code status line that shows current usage like a HUD:
 
 ```
 toast:✓ | ⚡sp | tok:143.5k | ctx:142.3k/200k 71% | cmpct:71/95% | 5h:18%/100 7d:33%/100
@@ -96,9 +96,28 @@ Install (separate from toaster — won't clobber an existing statusLine silently
 curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install-statusline.sh | bash
 ```
 
+## Optional: Codex native statusline
+
+Codex does **not** run Claude Code's `statusLine.command` shell contract. It has a native TUI footer configured by `/statusline` or by `[tui].status_line` in `${CODEX_HOME:-~/.codex}/config.toml`.
+
+Use this for the Codex equivalent:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install-codex-statusline.sh | bash
+```
+
+It sets a compact always-visible footer:
+
+```toml
+[tui]
+status_line = ["model-with-reasoning", "context-remaining", "five-hour-limit", "weekly-limit", "used-tokens", "git-branch", "task-progress", "current-dir"]
+```
+
+You can still run `/statusline` inside Codex to reorder fields, hide fields, or use the interactive picker. The Codex footer is native; the Claude HUD script remains Claude-only.
+
 ## Manual install
 
-No `curl | bash`? Copy `skills/toaster/SKILL.md` to `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/`, then merge `settings-hooks-snippet.json` into `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`. For the HUD, copy `statusline.sh` to `${CLAUDE_CONFIG_DIR:-~/.claude}/statusline.sh` and set `settings.json` `statusLine` to run that script.
+No `curl | bash`? Copy `skills/toaster/SKILL.md` to `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/`, then merge `settings-hooks-snippet.json` into `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`. For the Claude HUD, copy `statusline.sh` to `${CLAUDE_CONFIG_DIR:-~/.claude}/statusline.sh` and set `settings.json` `statusLine` to run that script. For Codex, add the `[tui].status_line` TOML shown above to `${CODEX_HOME:-~/.codex}/config.toml`.
 
 ## Optional: memory
 
