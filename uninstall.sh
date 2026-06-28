@@ -1,24 +1,42 @@
 #!/usr/bin/env bash
-# Remove toaster mode: deletes the skill and strips the hooks from settings.json.
+# Host-neutral toaster mode uninstaller.
 set -euo pipefail
 
-CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-SETTINGS="$CLAUDE_DIR/settings.json"
+RAW_BASE="${TOASTER_RAW_BASE:-https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main}"
+HOST="${TOASTER_HOST:-auto}" # auto | codex | claude | all
 
-command -v jq >/dev/null || { echo "error: jq is required"; exit 1; }
+command -v curl >/dev/null || { echo "error: curl is required"; exit 1; }
 
-rm -rf "$CLAUDE_DIR/skills/toaster"
-rm -f  "$CLAUDE_DIR/toaster-mode.off"
+run_remote() {
+  curl -fsSL "$RAW_BASE/$1" | bash
+}
 
-if [ -f "$SETTINGS" ]; then
-  tmp="$(mktemp)"
-  jq '
-    def strip(ev):
-      .hooks[ev] = ((.hooks[ev] // []) | map(select(any(.hooks[]?; ((.command // "") | test("toaster-mode\\.off"))) | not)))
-      | if (.hooks[ev] | length) == 0 then del(.hooks[ev]) else . end;
-    if .hooks then strip("SessionStart") | strip("UserPromptSubmit") else . end
-    | if (.hooks // {}) == {} then del(.hooks) else . end
-  ' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
+has_codex=0
+has_claude=0
+if [ -n "${CODEX_HOME:-}" ] || [ -d "$HOME/.codex" ] || command -v codex >/dev/null 2>&1; then
+  has_codex=1
+fi
+if [ -n "${CLAUDE_CONFIG_DIR:-}" ] || [ -d "$HOME/.claude" ] || command -v claude >/dev/null 2>&1; then
+  has_claude=1
 fi
 
-echo "✓ toaster mode removed. Restart Claude Code to drop the hooks this session."
+case "$HOST" in
+  codex)
+    run_remote uninstall-codex.sh
+    ;;
+  claude)
+    run_remote uninstall-claude.sh
+    ;;
+  all)
+    run_remote uninstall-codex.sh
+    run_remote uninstall-claude.sh
+    ;;
+  auto)
+    if [ "$has_codex" -eq 1 ]; then run_remote uninstall-codex.sh; fi
+    if [ "$has_claude" -eq 1 ]; then run_remote uninstall-claude.sh; fi
+    ;;
+  *)
+    echo "error: TOASTER_HOST must be auto, codex, claude, or all"
+    exit 1
+    ;;
+esac

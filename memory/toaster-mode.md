@@ -25,6 +25,9 @@ Rules when toaster mode is active:
 **v3:** Toaster now steers behavior, not just style. The injected reminder adds context hygiene, requested-detail exemptions, cleanup/confidence sweeps, and a secrets baseline. A turn-counter to throttle injection was considered and rejected — the reminder is a cache-read every turn, so throttling saves little and risks drift. Hooks stay inline/every-turn.
 
 **State / toggle:**
-- Default = ON. Disabled only when `${CLAUDE_CONFIG_DIR:-~/.claude}/toaster-mode.off` exists.
+- Default = ON. Disabled only when the host state flag exists.
+- Codex plugin flag: `$PLUGIN_DATA/.toaster-mode.off`.
+- Codex direct flag: `${CODEX_HOME:-~/.codex}/toaster-mode.off`.
+- Claude Code flag: `${CLAUDE_CONFIG_DIR:-~/.claude}/toaster-mode.off`.
 - Disable: `/toaster off` (creates the flag). Enable: `/toaster on` (removes it).
 - Safety-critical caveats and genuine ambiguity still get surfaced — terse, but not omitted.

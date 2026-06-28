@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "toaster-mode",
+  "description": "Terse answer/action-first reply style for coding agents.",
+  "owner": {
+    "name": "rm3-pro",
+    "url": "https://github.com/rm3-pro"
+  },
+  "plugins": [
+    {
+      "name": "toaster-mode",
+      "description": "Keeps replies terse by default while preserving requested detail for serious work.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

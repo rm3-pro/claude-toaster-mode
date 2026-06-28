@@ -1,0 +1,21 @@
+{
+  "name": "toaster-mode",
+  "interface": {
+    "displayName": "Toaster Mode"
+  },
+  "plugins": [
+    {
+      "name": "toaster-mode",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/rm3-pro/claude-toaster-mode.git",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

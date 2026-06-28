@@ -1,0 +1,10 @@
+{
+  "name": "toaster-mode",
+  "version": "3.1.0",
+  "description": "Terse answer/action-first reply style with lifecycle hooks for consistent coding-agent behavior.",
+  "author": {
+    "name": "rm3-pro",
+    "url": "https://github.com/rm3-pro"
+  },
+  "hooks": "./hooks/claude-codex-hooks.json"
+}

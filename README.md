@@ -1,28 +1,65 @@
-# claude-toaster-mode
+# toaster-mode
 
-Make **terse, answer/action-only** replies the permanent default for [Claude Code](https://claude.com/claude-code) — on every machine, every chat.
+Make **terse, answer/action-only** replies the permanent default for coding agents: Codex, Claude Code, and any future host adapter.
 
 "Toaster mode" = no preamble, no postamble, no hedging, one recommendation instead of a survey. Enforced automatically (not just a preference) via lifecycle **hooks**, with a `/toaster` skill to toggle it.
 
 **v3 steers behavior, not just style:** the injected reminder routes broad multi-file searches to an Explore subagent, drops tool-call narration, avoids re-reading/re-deriving, preserves requested detail for reviews/security/graphify/Obsidian/wiki work, runs cleanup/confidence sweeps before final answers, and keeps secrets out of git.
 
-## Install (one line)
+## Install
+
+### Codex (recommended)
+
+```bash
+codex plugin marketplace add rm3-pro/claude-toaster-mode --ref main
+codex plugin add toaster-mode@toaster-mode
+```
+
+Then open `/hooks`, trust the toaster hooks, and start a new thread. This is the native Codex path and matches how Ponytail, Graphify, and other Codex plugins are loaded.
+
+### Direct installer
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install.sh | bash
 ```
 
-Requires `jq` and `curl`. Then open `/hooks` once (or restart Claude Code) to load the hooks in the current session — new sessions pick them up automatically.
+Requires `jq` and `curl`. This remains useful for Claude Code and direct config-level installs. It auto-detects Codex and Claude Code and installs the matching adapter(s). Force a target when needed:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install.sh | TOASTER_HOST=codex bash
+curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install.sh | TOASTER_HOST=claude bash
+curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/install.sh | TOASTER_HOST=all bash
+```
+
+Then open `/hooks` once or restart the host so the current session trusts/loads the hooks. New sessions pick them up automatically.
+
+Claude Code can also install it as a plugin from the same repo:
+
+```
+/plugin marketplace add rm3-pro/claude-toaster-mode
+/plugin install toaster-mode@toaster-mode
+```
 
 ## What it installs
 
 | Path | Purpose |
 |------|---------|
+| `.agents/plugins/marketplace.json` | Codex marketplace entry for GitHub install |
+| `.codex-plugin/plugin.json` | Codex plugin manifest |
+| `.claude-plugin/plugin.json` | Claude plugin manifest |
+| `.claude-plugin/marketplace.json` | Claude marketplace entry |
+| `hooks/claude-codex-hooks.json` | Plugin `SessionStart` + `UserPromptSubmit` hooks |
+| `hooks/toaster-hook.js` | Plugin hook runtime for Codex/Claude |
+| `$PLUGIN_DATA/.toaster-mode.off` (flag) | Codex plugin off switch; absent = ON |
+| `${CODEX_HOME:-~/.codex}/skills/toaster/SKILL.md` | Codex direct-install toaster skill/rules |
+| `${CODEX_HOME:-~/.codex}/hooks/toaster-codex-hook.sh` | Codex direct-install hook script |
+| `${CODEX_HOME:-~/.codex}/hooks.json` → `hooks` | Codex direct-install hooks |
+| `${CODEX_HOME:-~/.codex}/toaster-mode.off` (flag) | Codex direct-install off switch; absent = ON |
 | `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/SKILL.md` | the `/toaster` slash command (toggle + rule statement) |
-| `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` → `hooks` | `SessionStart` + `UserPromptSubmit` hooks that inject the rule every chat / every prompt |
-| `${CLAUDE_CONFIG_DIR:-~/.claude}/toaster-mode.off` (flag) | absent = ON (default); present = OFF |
+| `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` → `hooks` | Claude Code `SessionStart` + `UserPromptSubmit` hooks |
+| `${CLAUDE_CONFIG_DIR:-~/.claude}/toaster-mode.off` (flag) | Claude Code off switch; absent = ON |
 
-The hooks merge into existing `settings.json` idempotently — re-running the installer never duplicates them.
+Hooks merge idempotently. Re-running the installer does not duplicate them.
 
 ## Usage
 
@@ -35,19 +72,21 @@ The hooks merge into existing `settings.json` idempotently — re-running the in
 Equivalent without the skill:
 
 ```bash
-touch "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"   # off
-rm -f  "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"  # on
+touch "${CODEX_HOME:-$HOME/.codex}/toaster-mode.off"              # Codex off
+rm -f  "${CODEX_HOME:-$HOME/.codex}/toaster-mode.off"             # Codex on
+touch "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"      # Claude Code off
+rm -f  "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"     # Claude Code on
 ```
 
 ## How it works
 
-A hook is a shell command Claude Code runs at a lifecycle event. These two fire on `SessionStart` (each new chat) and `UserPromptSubmit` (each message). The command prints the toaster reminder **only if the off-flag is absent**; that stdout is injected into the model's context as a system reminder. Deterministic enforcement, reapplied every turn — which is why it survives a long conversation where a one-time instruction would drift.
+Each host adapter wires lifecycle hooks for `SessionStart` and `UserPromptSubmit`. Codex uses the plugin manifest and hook trust flow; Claude/direct installs use config-level hooks. The hook emits the toaster reminder **only if the off-flag is absent**; the host injects that output into the model context as a system reminder. Deterministic enforcement, reapplied every turn — which is why it survives a long conversation where a one-time instruction would drift.
 
 The reminder is emitted byte-identical every turn, so after the first write it's a cheap prompt-cache read — which is why v3 invests in *behavior* clauses (the real cost lever) rather than throttling the injection to save tokens.
 
 ## In the wild
 
-Habits from people shipping with Claude every day — transcribed here rather than embedded as video. They now map directly to behavior modifiers in the injected reminder: delete sweep, confidence/root-cause sweep, and secrets baseline.
+Habits from people shipping with agents every day — transcribed here rather than embedded as video. They now map directly to behavior modifiers in the injected reminder: delete sweep, confidence/root-cause sweep, and secrets baseline.
 
 > **"The most useful prompt I've ever given Claude wasn't for writing code — it was for *deleting* it."**
 >
@@ -117,14 +156,21 @@ You can still run `/statusline` inside Codex to reorder fields, hide fields, or 
 
 ## Manual install
 
-No `curl | bash`? Copy `skills/toaster/SKILL.md` to `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/`, then merge `settings-hooks-snippet.json` into `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`. For the Claude HUD, copy `statusline.sh` to `${CLAUDE_CONFIG_DIR:-~/.claude}/statusline.sh` and set `settings.json` `statusLine` to run that script. For Codex, add the `[tui].status_line` TOML shown above to `${CODEX_HOME:-~/.codex}/config.toml`.
+No `curl | bash`?
+
+- Codex plugin: use `codex plugin marketplace add rm3-pro/claude-toaster-mode --ref main`, then `codex plugin add toaster-mode@toaster-mode`, then trust hooks with `/hooks`.
+- Codex direct: copy `skills/toaster/SKILL.md` to `${CODEX_HOME:-~/.codex}/skills/toaster/`, copy `hooks/toaster-codex-hook.sh` to `${CODEX_HOME:-~/.codex}/hooks/`, then merge a `SessionStart` and `UserPromptSubmit` command hook into `${CODEX_HOME:-~/.codex}/hooks.json`.
+- Claude Code: copy `skills/toaster/SKILL.md` to `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/`, then merge `settings-hooks-snippet.json` into `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`.
+- Claude HUD: copy `statusline.sh` to `${CLAUDE_CONFIG_DIR:-~/.claude}/statusline.sh` and set `settings.json` `statusLine` to run that script.
+- Codex footer: add the `[tui].status_line` TOML shown above to `${CODEX_HOME:-~/.codex}/config.toml`.
 
 ## Optional: memory
 
-`memory/toaster-mode.md` is a Claude Code auto-memory note documenting the rule. Drop it in your project's memory dir if you use that feature.
+`memory/toaster-mode.md` is an optional memory note documenting the rule. Drop it in a host/project memory directory if you use that feature.
 
 ## Uninstall
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/uninstall.sh | bash
+codex plugin remove toaster-mode
 ```

@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/toaster-hook.js\" SessionStart; exit 0",
+            "commandWindows": "if (Get-Command node -ErrorAction SilentlyContinue) { node \"$env:CLAUDE_PLUGIN_ROOT\\hooks\\toaster-hook.js\" SessionStart }",
+            "timeout": 5,
+            "statusMessage": "Loading toaster mode..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/toaster-hook.js\" UserPromptSubmit; exit 0",
+            "commandWindows": "if (Get-Command node -ErrorAction SilentlyContinue) { node \"$env:CLAUDE_PLUGIN_ROOT\\hooks\\toaster-hook.js\" UserPromptSubmit }",
+            "timeout": 5,
+            "statusMessage": "Loading toaster mode..."
+          }
+        ]
+      }
+    ]
+  }
+}

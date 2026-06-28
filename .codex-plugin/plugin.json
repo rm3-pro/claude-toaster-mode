@@ -1,0 +1,38 @@
+{
+  "name": "toaster-mode",
+  "version": "3.1.0",
+  "description": "Terse answer/action-first reply style with lifecycle hooks for consistent coding-agent behavior.",
+  "author": {
+    "name": "rm3-pro",
+    "url": "https://github.com/rm3-pro"
+  },
+  "homepage": "https://github.com/rm3-pro/claude-toaster-mode",
+  "repository": "https://github.com/rm3-pro/claude-toaster-mode",
+  "keywords": [
+    "codex",
+    "claude",
+    "hooks",
+    "terse",
+    "productivity"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/claude-codex-hooks.json",
+  "interface": {
+    "displayName": "Toaster Mode",
+    "shortDescription": "Answer/action-first replies with no ceremony.",
+    "longDescription": "Keeps coding agents terse by default while preserving requested detail for reviews, security work, Graphify, Obsidian, and explicit walkthroughs.",
+    "developerName": "rm3-pro",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions",
+      "Lifecycle hooks"
+    ],
+    "websiteURL": "https://github.com/rm3-pro/claude-toaster-mode",
+    "defaultPrompt": [
+      "Turn toaster mode on.",
+      "Use terse answer/action-first replies.",
+      "Keep this session concise."
+    ],
+    "brandColor": "#111111"
+  }
+}

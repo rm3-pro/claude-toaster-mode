@@ -10,8 +10,9 @@ A terse default reply style. **On unless disabled.** Enforced automatically ever
 ## State flag
 
 - **ON (default):** flag file absent.
-- **OFF:** `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off` exists.
-- If `CLAUDE_CONFIG_DIR` is set, the flag is `$CLAUDE_CONFIG_DIR/toaster-mode.off`.
+- **OFF in Codex plugin:** `$PLUGIN_DATA/.toaster-mode.off` exists.
+- **OFF in Codex direct install:** `${CODEX_HOME:-$HOME/.codex}/toaster-mode.off` exists.
+- **OFF in Claude Code:** `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off` exists.
 
 The hooks inject the toaster reminder on every new session and every user prompt **only when the flag is absent**, so removing the file is all that's needed to keep it permanently active.
 
@@ -24,19 +25,19 @@ The hooks inject the toaster reminder on every new session and every user prompt
 ## Enable
 
 ```bash
-rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: ON"
+if test -n "${PLUGIN_DATA:-}"; then rm -f "$PLUGIN_DATA/.toaster-mode.off"; fi; rm -f "${CODEX_HOME:-$HOME/.codex}/toaster-mode.off" "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: ON"
 ```
 
 ## Disable
 
 ```bash
-mkdir -p "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" && touch "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: OFF (verbose replies)"
+if test -n "${PLUGIN_DATA:-}"; then mkdir -p "$PLUGIN_DATA" && touch "$PLUGIN_DATA/.toaster-mode.off"; fi; mkdir -p "${CODEX_HOME:-$HOME/.codex}" "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" && touch "${CODEX_HOME:-$HOME/.codex}/toaster-mode.off" "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: OFF (verbose replies)"
 ```
 
 ## Status
 
 ```bash
-test -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: OFF" || echo "toaster mode: ON"
+if { test -n "${PLUGIN_DATA:-}" && test -f "$PLUGIN_DATA/.toaster-mode.off"; } || test -f "${CODEX_HOME:-$HOME/.codex}/toaster-mode.off" || test -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"; then echo "toaster mode: OFF"; else echo "toaster mode: ON"; fi
 ```
 
 ## The rules (apply these when ON)
