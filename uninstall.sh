@@ -14,7 +14,7 @@ if [ -f "$SETTINGS" ]; then
   tmp="$(mktemp)"
   jq '
     def strip(ev):
-      .hooks[ev] = ((.hooks[ev] // []) | map(select(any(.hooks[]?; .command | test("toaster-mode.off")) | not)))
+      .hooks[ev] = ((.hooks[ev] // []) | map(select(any(.hooks[]?; ((.command // "") | test("toaster-mode\\.off"))) | not)))
       | if (.hooks[ev] | length) == 0 then del(.hooks[ev]) else . end;
     if .hooks then strip("SessionStart") | strip("UserPromptSubmit") else . end
     | if (.hooks // {}) == {} then del(.hooks) else . end

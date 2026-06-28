@@ -13,6 +13,7 @@ RAW_BASE="${TOASTER_RAW_BASE:-https://raw.githubusercontent.com/rm3-pro/claude-t
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 SETTINGS="$CLAUDE_DIR/settings.json"
 SCRIPT="$CLAUDE_DIR/statusline.sh"
+STATUSLINE_CMD="bash \"$SCRIPT\""
 
 command -v jq  >/dev/null || { echo "error: jq is required (brew/apt install jq)"; exit 1; }
 command -v curl >/dev/null || { echo "error: curl is required"; exit 1; }
@@ -32,7 +33,7 @@ if [ -n "$existing" ] && ! printf '%s' "$existing" | grep -q 'statusline.sh'; th
 fi
 
 tmp="$(mktemp)"
-jq '.statusLine = {"type":"command","command":"bash ~/.claude/statusline.sh"}' \
+jq --arg cmd "$STATUSLINE_CMD" '.statusLine = {"type":"command","command":$cmd}' \
   "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
 
 echo "✓ HUD statusline installed. Open /statusline or restart to see it."

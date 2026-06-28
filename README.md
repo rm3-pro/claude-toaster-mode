@@ -4,7 +4,7 @@ Make **terse, answer/action-only** replies the permanent default for [Claude Cod
 
 "Toaster mode" = no preamble, no postamble, no hedging, one recommendation instead of a survey. Enforced automatically (not just a preference) via lifecycle **hooks**, with a `/toaster` skill to toggle it.
 
-**v2 also steers behavior, not just style:** the injected reminder routes broad multi-file searches to an Explore subagent (keeping file dumps out of the main context), drops tool-call narration, and avoids re-reading/re-deriving — cutting the real cost driver (context growth), not just reply length.
+**v3 steers behavior, not just style:** the injected reminder routes broad multi-file searches to an Explore subagent, drops tool-call narration, avoids re-reading/re-deriving, preserves requested detail for reviews/security/graphify/Obsidian/wiki work, runs cleanup/confidence sweeps before final answers, and keeps secrets out of git.
 
 ## Install (one line)
 
@@ -18,9 +18,9 @@ Requires `jq` and `curl`. Then open `/hooks` once (or restart Claude Code) to lo
 
 | Path | Purpose |
 |------|---------|
-| `~/.claude/skills/toaster/SKILL.md` | the `/toaster` slash command (toggle + rule statement) |
-| `~/.claude/settings.json` → `hooks` | `SessionStart` + `UserPromptSubmit` hooks that inject the rule every chat / every prompt |
-| `~/.claude/toaster-mode.off` (flag) | absent = ON (default); present = OFF |
+| `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/SKILL.md` | the `/toaster` slash command (toggle + rule statement) |
+| `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` → `hooks` | `SessionStart` + `UserPromptSubmit` hooks that inject the rule every chat / every prompt |
+| `${CLAUDE_CONFIG_DIR:-~/.claude}/toaster-mode.off` (flag) | absent = ON (default); present = OFF |
 
 The hooks merge into existing `settings.json` idempotently — re-running the installer never duplicates them.
 
@@ -35,19 +35,19 @@ The hooks merge into existing `settings.json` idempotently — re-running the in
 Equivalent without the skill:
 
 ```bash
-touch ~/.claude/toaster-mode.off   # off
-rm -f  ~/.claude/toaster-mode.off  # on
+touch "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"   # off
+rm -f  "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off"  # on
 ```
 
 ## How it works
 
 A hook is a shell command Claude Code runs at a lifecycle event. These two fire on `SessionStart` (each new chat) and `UserPromptSubmit` (each message). The command prints the toaster reminder **only if the off-flag is absent**; that stdout is injected into the model's context as a system reminder. Deterministic enforcement, reapplied every turn — which is why it survives a long conversation where a one-time instruction would drift.
 
-The reminder is emitted byte-identical every turn, so after the first write it's a cheap prompt-cache read — which is why v2 invests in *behavior* clauses (the real cost lever) rather than throttling the injection to save tokens.
+The reminder is emitted byte-identical every turn, so after the first write it's a cheap prompt-cache read — which is why v3 invests in *behavior* clauses (the real cost lever) rather than throttling the injection to save tokens.
 
 ## In the wild
 
-Habits from people shipping with Claude every day — transcribed here rather than embedded as video. They rhyme with toaster mode: cut the ceremony, keep the signal, don't skip the unglamorous parts.
+Habits from people shipping with Claude every day — transcribed here rather than embedded as video. They now map directly to behavior modifiers in the injected reminder: delete sweep, confidence/root-cause sweep, and secrets baseline.
 
 > **"The most useful prompt I've ever given Claude wasn't for writing code — it was for *deleting* it."**
 >
@@ -98,7 +98,7 @@ curl -fsSL https://raw.githubusercontent.com/rm3-pro/claude-toaster-mode/main/in
 
 ## Manual install
 
-No `curl | bash`? Copy `skills/toaster/SKILL.md` to `~/.claude/skills/toaster/`, then merge `settings-hooks-snippet.json` into `~/.claude/settings.json`. For the HUD, copy `statusline.sh` to `~/.claude/statusline.sh` and set `settings.json` `statusLine` to `{"type":"command","command":"bash ~/.claude/statusline.sh"}`.
+No `curl | bash`? Copy `skills/toaster/SKILL.md` to `${CLAUDE_CONFIG_DIR:-~/.claude}/skills/toaster/`, then merge `settings-hooks-snippet.json` into `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`. For the HUD, copy `statusline.sh` to `${CLAUDE_CONFIG_DIR:-~/.claude}/statusline.sh` and set `settings.json` `statusLine` to run that script.
 
 ## Optional: memory
 

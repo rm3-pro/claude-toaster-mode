@@ -32,7 +32,7 @@ if [ -f "$CLAUDE_DIR/toaster-mode.off" ]; then
 else
     enforced=""
     if [ -f "$CLAUDE_DIR/settings.json" ]; then
-        enforced=$(jq -r '[.hooks.UserPromptSubmit[]?.hooks[]?.command] | any(test("toaster-mode.off"))' "$CLAUDE_DIR/settings.json" 2>/dev/null)
+        enforced=$(jq -r '[.hooks.UserPromptSubmit[]?.hooks[]?.command] | any(test("toaster-mode\\.off"))' "$CLAUDE_DIR/settings.json" 2>/dev/null)
     fi
     if [ "$enforced" != "true" ]; then
         toast_seg="${DIM}toast:${RST}${YLW}⚠${RST}"

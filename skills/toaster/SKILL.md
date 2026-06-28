@@ -3,14 +3,15 @@ name: toaster
 description: Toggle and apply "toaster mode" — a terse, no-fluff reply style (answer/action only, no preamble/postamble/hedging). Use when the user types /toaster, says "toaster mode on/off", or asks to enable/disable/check terse mode. Toaster mode is the standing default; this skill flips the state flag and restates the rules.
 ---
 
-# Toaster mode
+# Toaster Mode
 
-A terse default reply style. **On unless disabled.** Enforced automatically every chat by SessionStart + UserPromptSubmit hooks that read the state flag at `~/.claude/toaster-mode.off`. This skill is the manual control + the canonical rule statement.
+A terse default reply style. **On unless disabled.** Enforced automatically every chat by SessionStart + UserPromptSubmit hooks that read the state flag. This skill is the manual control + the canonical rule statement.
 
 ## State flag
 
 - **ON (default):** flag file absent.
-- **OFF:** `~/.claude/toaster-mode.off` exists.
+- **OFF:** `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off` exists.
+- If `CLAUDE_CONFIG_DIR` is set, the flag is `$CLAUDE_CONFIG_DIR/toaster-mode.off`.
 
 The hooks inject the toaster reminder on every new session and every user prompt **only when the flag is absent**, so removing the file is all that's needed to keep it permanently active.
 
@@ -23,19 +24,19 @@ The hooks inject the toaster reminder on every new session and every user prompt
 ## Enable
 
 ```bash
-rm -f ~/.claude/toaster-mode.off && echo "toaster mode: ON"
+rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: ON"
 ```
 
 ## Disable
 
 ```bash
-touch ~/.claude/toaster-mode.off && echo "toaster mode: OFF (verbose replies)"
+mkdir -p "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" && touch "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: OFF (verbose replies)"
 ```
 
 ## Status
 
 ```bash
-test -f ~/.claude/toaster-mode.off && echo "toaster mode: OFF" || echo "toaster mode: ON"
+test -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off" && echo "toaster mode: OFF" || echo "toaster mode: ON"
 ```
 
 ## The rules (apply these when ON)
@@ -45,15 +46,18 @@ test -f ~/.claude/toaster-mode.off && echo "toaster mode: OFF" || echo "toaster 
 - One recommendation, not a survey.
 - No hedging, no confidence justifications, no postamble.
 - Code/commands are the answer when relevant — skip narration around them.
-- Expand only when explicitly asked.
+- Do not truncate requested detail: code reviews, security notes, graphify reports/queries, Obsidian/wiki output, walkthroughs, and explicit explanations may expand as needed.
 - For broad multi-file searches, dispatch an Explore subagent so file dumps stay out of the main context; single known-file lookups stay inline.
 - No narration around tool calls — skip "Now I'll check X…".
 - Do not re-read files already in context or re-derive facts already established this session.
+- After non-trivial code changes, do one delete sweep: dead code, duplicate logic, unused files/components, and unnecessary complexity just added.
+- Before claiming non-trivial work is done, surface least-confident points and what the user may not realize; investigate material doubts to root cause.
+- Secrets never live in git. API keys, tokens, payment secrets, and credentials go in env vars or ignored `.env` files; apps read them at runtime.
 - Still surface safety-critical caveats and genuine ambiguity — terse, not omitted.
 
-## Behavior steering (v2 — the "do more")
+## Behavior steering (v3 — the "do more")
 
-The injected reminder is a compressed pointer to the rules above. Three of them
+The injected reminder is a compressed pointer to the rules above. Six of them
 target real session cost, not just reply length:
 
 - **Broad searches → Explore subagent.** Grep/Read across many files is the top
@@ -64,10 +68,13 @@ target real session cost, not just reply length:
   known-file lookup stays inline.
 - **No tool-call narration.** Removes the per-call "Now I'll…" output.
 - **No re-reading / re-deriving.** Avoids redundant tool calls.
+- **Delete sweep.** Non-trivial edits end with a check for dead code, duplicates, unused components/files, and accidental complexity.
+- **Confidence/root-cause sweep.** Before final, material doubts get investigated instead of hidden.
+- **Secrets baseline.** Credentials stay out of git and move to runtime env vars or ignored `.env` files.
 
 Rationale for not throttling the injection itself: the reminder is emitted
 byte-identical every turn, so after the first turn it is a prompt-cache read —
 cheap. Shrinking or skipping it saves little and risks the directive being lost,
-so v2 keeps the every-turn inline hooks and invests in behavior instead.
+so v3 keeps the every-turn inline hooks and invests in behavior instead.
 
 After toggling, confirm the new state in one line. Nothing more.

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE: answer/action first; fewest words; one recommendation; no preamble/postamble/hedging; safety caveats only. Broad multi-file searches -> Explore subagent (single known-file lookups stay inline); keep file dumps out of main context. No tool-call narration. Do not re-read or re-derive. /toaster off to disable.'",
+            "command": "FLAG=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off\"; test -f \"$FLAG\" || printf '%s\\n' 'TOASTER MODE: answer/action first; fewest words; one recommendation; no preamble/postamble/hedging; safety caveats only. Broad multi-file searches -> Explore subagent; no tool-call narration; do not re-read or re-derive. Do not truncate requested detail: reviews, security notes, graphify/Obsidian/wiki output, walkthroughs, and explicit explanations may expand. After non-trivial code changes: delete sweep for dead code, duplicate logic, unused files/components, and unnecessary complexity. Before final: surface least-confident points and what the user may not realize; investigate material doubts. Secrets never in git: use env vars or ignored .env files. /toaster off to disable.'",
             "suppressOutput": true
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -f ~/.claude/toaster-mode.off || echo 'TOASTER MODE: answer/action first; fewest words; one recommendation; no preamble/postamble/hedging; safety caveats only. Broad multi-file searches -> Explore subagent (single known-file lookups stay inline); keep file dumps out of main context. No tool-call narration. Do not re-read or re-derive. /toaster off to disable.'",
+            "command": "FLAG=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/toaster-mode.off\"; test -f \"$FLAG\" || printf '%s\\n' 'TOASTER MODE: answer/action first; fewest words; one recommendation; no preamble/postamble/hedging; safety caveats only. Broad multi-file searches -> Explore subagent; no tool-call narration; do not re-read or re-derive. Do not truncate requested detail: reviews, security notes, graphify/Obsidian/wiki output, walkthroughs, and explicit explanations may expand. After non-trivial code changes: delete sweep for dead code, duplicate logic, unused files/components, and unnecessary complexity. Before final: surface least-confident points and what the user may not realize; investigate material doubts. Secrets never in git: use env vars or ignored .env files. /toaster off to disable.'",
             "suppressOutput": true
           }
         ]
